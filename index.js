@@ -17,10 +17,10 @@ let bushes =
 [
     {id: 1,x: col*2+col/4, y: row/4},
     {id: 2,x: col*3+col/4, y: row/4},
-    {id: 3,x: col+col/4, y: row+row/4},
-    {id: 4,x: col*4+col/4, y: row+row/4},
+    {id: 6,x: col+col/4, y: row+row/4},
+    {id: 3,x: col*4+col/4, y: row+row/4},
     {id: 5,x: col*2+col/4, y: row*2+row/4},
-    {id: 6,x: col*3+col/4, y: row*2+row/4}
+    {id: 4,x: col*3+col/4, y: row*2+row/4}
 ]
 bush.addEventListener(
     "load",
