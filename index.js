@@ -20,12 +20,12 @@ bush.src = 'berry.png'
 // Set Bush Attributes
 let bushes = 
 [
-    {id: 1, x: col*2+col/4, y: row/4},
-    {id: 2, x: col*3+col/4, y: row/4},
-    {id: 6, x: col+col/4, y: row+row/4},
-    {id: 3, x: col*4+col/4, y: row+row/4},
-    {id: 5, x: col*2+col/4, y: row*2+row/4},
-    {id: 4, x: col*3+col/4, y: row*2+row/4}
+    {id: 1, x: col*2+col/4, y: row/4, e: 0, r: 80},
+    {id: 2, x: col*3+col/4, y: row/4, e: 0, r: 80},
+    {id: 6, x: col+col/4, y: row+row/4, e: 0, r: 80},
+    {id: 3, x: col*4+col/4, y: row+row/4, e: 0, r: 80},
+    {id: 5, x: col*2+col/4, y: row*2+row/4, e: 0, r: 80},
+    {id: 4, x: col*3+col/4, y: row*2+row/4, e: 0, r: 80}
 ]
 // Draw Bush on load
 bush.addEventListener(
@@ -71,6 +71,8 @@ let p_pos = {x: col*3-col/4, y: row+row/4}
 let action = ""
 let skip = {x: 0, y: 0}
 let c = 0   // Counter For Timeskip
+let tc = 0  // Counter For Time
+let score = 0
 
 //  Set Click Event
 canvas.addEventListener("click", (e) =>
@@ -79,7 +81,7 @@ canvas.addEventListener("click", (e) =>
         bushes.forEach( // Check for each Bush
             (rect, i) =>
             {
-                if(isInside(col/2, row/2, rect.x, rect.y, pos.x, pos.y))
+                if(isInside(col/2, row/2, rect.x, rect.y, pos.x, pos.y) && action !== 'moving')
                 {
                     action = "moving"
                     dest = i
@@ -91,6 +93,14 @@ canvas.addEventListener("click", (e) =>
                 }
             }
         )
+    }
+)
+
+document.addEventListener("keypress", (e) =>
+    {
+        let temp = bushes.filter(rect => isInside(col/2, row/2, rect.x, rect.y, p_pos.x, p_pos.y) ? true : false)
+        if(temp.length > 0)
+            action = 'forage'
     }
 )
 
@@ -107,6 +117,23 @@ function reached(p, d, skip)
         return p.x <= d.x && p.y <= d.y
 }
 
+//  Update Rewards
+function update(patch)
+{
+    bushes.forEach(
+        (b, i) =>
+        {
+            if(i === patch)
+                b.r = b.r <= 0 ? 0 : Math.floor(Math.pow(0.95, b.e++) * b.r)   // e gets up by 1 for each calculation
+            else
+                b.r = b.r <= 0 ? 5 : b.r>=100 || b.r*1.1 >= 100 ? 100 : b.r*1.1 
+
+            bushes[i].r = b.r
+            bushes[i].e = b.e
+        }
+    )
+}
+
 //  Update Loop
 function draw()
 {
@@ -120,11 +147,14 @@ function draw()
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.stroke()
     ctx.fillStyle = 'black'
+    let seconds = Math.floor(tc/100)
+    let minutes = Math.floor(seconds/60)
+    ctx.fillText(`Time: ${minutes}:${seconds}`, col/4, row/4)
+    ctx.fillText("Score: " + score, col/4, row/2.5)
 
     switch(action)
     {
         case 'moving':
-            ctx.fillText("Moving to Bush " + bushes[dest].id, col/4, row/4)
             bushes.forEach(
                 rect => 
                 {
@@ -144,25 +174,26 @@ function draw()
 
             if(reached(p_pos, bushes[dest], skip))
             {
-                action = 'reached'
-                c = 0
+                action = ''
                 p_pos.x = bushes[dest].x
                 p_pos.y = bushes[dest].y
             }
             
             break
 
-        case 'reached':
-            action = c++ === 50 ? "" : "reached"
-            ctx.fillText("Reached Bush " + bushes[dest].id, bushes[dest].x, bushes[dest].y + row/4)
+        case 'forage':
+            if(c === 500)
+            {
+                action = ''
+                c = 0
+                update(dest)
+                score += bushes[dest].r
+            }
+            ctx.fillText("Foraging Bush " + bushes[dest].id, bushes[dest].x, bushes[dest].y + row/4)
+            c++
             break
 
         default:
-            if(dest === -1)
-                ctx.fillText("Welcome", col/4, row/4)
-            else
-                ctx.fillText("On Bush " + bushes[dest].id, col/4, row/4)
-
             bushes.forEach(
                 rect => 
                 {
@@ -178,5 +209,7 @@ function draw()
             ctx.stroke()    // End Draw
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
     }
+
+    tc++
 }
 setInterval(draw, 10)
