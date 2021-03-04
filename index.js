@@ -8,19 +8,19 @@ ctx.fillStyle = "green"
 ctx.fillRect(0, 0, canvas.width, canvas.height)
 ctx.stroke()
 
-let col = canvas.height/6
+let col = canvas.width/6
 let row = canvas.height/3
 
 let bush = new Image()
 bush.src = 'berry.png'
 let bushes = 
 [
-    {id: 1,x: col*2, y: 0},
-    {id: 2,x: col*3, y: 0},
-    {id: 3,x: col, y: row},
-    {id: 4,x: col*4, y: row},
-    {id: 5,x: col*2, y: row*2},
-    {id: 6,x: col*3, y: row*2}
+    {id: 1,x: col*2+col/4, y: row/4},
+    {id: 2,x: col*3+col/4, y: row/4},
+    {id: 3,x: col+col/4, y: row+row/4},
+    {id: 4,x: col*4+col/4, y: row+row/4},
+    {id: 5,x: col*2+col/4, y: row*2+row/4},
+    {id: 6,x: col*3+col/4, y: row*2+row/4}
 ]
 bush.addEventListener(
     "load",
@@ -44,7 +44,10 @@ player.addEventListener(
     "load",
     function()
     {
-        ctx.drawImage(player, col*3-col/2, row, col/2, row/2)
+        ctx.beginPath()
+        ctx.rect(col*3-col/4, row+row/4, col/2, row/2)
+        ctx.stroke()
+        ctx.drawImage(player, col*3-col/4, row+row/4, col/2, row/2)
     }
 )
 
