@@ -34,7 +34,6 @@ bush.addEventListener(
                 ctx.rect(rect.x, rect.y, col/2, row/2)
                 ctx.stroke()
                 ctx.drawImage(bush, rect.x, rect.y, col/2, row/2)
-                console.log(rect.x, rect.y, col/2, row/2)
             }    
         )
     }
@@ -52,7 +51,6 @@ player.addEventListener(
 
 function isInside(rw, rh, rx, ry, x, y)
 {
-    console.log(x <= rx+rw, x >= rx, y <= ry+rh, y >= ry)
     return x <= rx+rw && x >= rx && y <= ry+rh && y >= ry
 }
 
@@ -64,11 +62,10 @@ canvas.addEventListener("click", (e) =>
         bushes.forEach(
             rect =>
             {
-                console.log(isInside(col/2, row/2, rect.x, rect.y, pos.x, pos.y))
-                // if(isInside(col/2, row/2, rect.x, rect.y, pos.x, pos.y))
-                // {
-                //     alert("Click on Rect:"+rect.id)
-                // }
+                if(isInside(col/2, row/2, rect.x, rect.y, pos.x, pos.y))
+                {
+                    alert("Click on Rect:"+rect.id)
+                }
             }
         )
     }
