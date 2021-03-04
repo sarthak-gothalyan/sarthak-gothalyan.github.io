@@ -166,12 +166,8 @@ function draw()
     ctx.stroke()
     ctx.fillStyle = 'black'
     let seconds = Math.floor(tc/100)
-    let minutes = 0
-    if(seconds === 60)
-    {
-        ++minutes
-        seconds = 0
-    }
+    let minutes = Math.floor(seconds/60)
+    seconds = seconds%60
     ctx.fillText(`Time: ${minutes}:${seconds}`, col/4, row/4)
     ctx.fillText("Score: " + score, col/4, row/2.5)
 
