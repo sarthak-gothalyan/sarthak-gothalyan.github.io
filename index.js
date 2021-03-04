@@ -70,6 +70,7 @@ let dest = -1
 let p_pos = {x: col*3-col/4, y: row+row/4}
 let action = ""
 let skip = {x: 0, y: 0}
+let c = 0   // Counter For Timeskip
 
 //  Set Click Event
 canvas.addEventListener("click", (e) =>
@@ -143,11 +144,17 @@ function draw()
 
             if(reached(p_pos, bushes[dest], skip))
             {
-                action = ''
+                action = 'reached'
+                c = 0
                 p_pos.x = bushes[dest].x
                 p_pos.y = bushes[dest].y
             }
             
+            break
+
+        case 'reached':
+            action = c++ === 50 ? "" : "reached"
+            ctx.fillText("Reached Bush " + bushes[dest].id, bushes[dest].x, bushes[dest].y + row/4)
             break
 
         default:
