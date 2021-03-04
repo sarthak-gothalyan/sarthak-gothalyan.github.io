@@ -13,7 +13,6 @@ let row = canvas.height/3
 
 let bush = new Image()
 bush.src = 'berry.png'
-console.log(canvas.width, canvas.height)
 let bushes = 
 [
     {id: 1,x: col*2, y: 0},
