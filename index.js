@@ -14,6 +14,21 @@ ctx.stroke()
 let col = canvas.width/6    // Width of one partition
 let row = canvas.height/3   // Height of one partition
 
+//  Create a Video element to play during foraging
+let vid = document.createElement("video")
+vid.src = "harvest.mp4"
+
+// Create a Audio Element for Background Noise
+var audio = document.createElement("AUDIO")
+document.body.appendChild(audio);
+audio.src = "forest.wav"
+document.body.addEventListener("mousemove", // Add Mouse Movement as audio starter
+    function () 
+    {
+        audio.play()
+    }
+)
+
 //  Draw Bushes
 let bush = new Image()
 bush.src = 'berry.png'
@@ -100,7 +115,10 @@ document.addEventListener("keypress", (e) =>
     {
         let temp = bushes.filter(rect => isInside(col/2, row/2, rect.x, rect.y, p_pos.x, p_pos.y) ? true : false)
         if(temp.length > 0)
+        {    
             action = 'forage'
+            vid.play()
+        }
     }
 )
 
@@ -148,7 +166,12 @@ function draw()
     ctx.stroke()
     ctx.fillStyle = 'black'
     let seconds = Math.floor(tc/100)
-    let minutes = Math.floor(seconds/60)
+    let minutes = 0
+    if(seconds === 60)
+    {
+        ++minutes
+        seconds = 0
+    }
     ctx.fillText(`Time: ${minutes}:${seconds}`, col/4, row/4)
     ctx.fillText("Score: " + score, col/4, row/2.5)
 
@@ -188,8 +211,10 @@ function draw()
                 c = 0
                 update(dest)
                 score += bushes[dest].r
+                vid.pause()
+                vid.load()
             }
-            ctx.fillText("Foraging Bush " + bushes[dest].id, bushes[dest].x, bushes[dest].y + row/4)
+            ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, row/2)
             c++
             break
 
