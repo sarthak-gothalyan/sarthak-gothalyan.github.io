@@ -150,8 +150,10 @@ function update(patch)
         {
             if(i === patch)
                 b.r = b.r <= 0 ? 0 : Math.floor(Math.pow(0.95, b.e++) * b.r)   // e gets up by 1 for each calculation
+            else if(b.empty)
+                return
             else
-                b.r = b.r <= 0 ? 5 : b.r>=100 || b.r*1.1 >= 100 ? 100 : b.r*1.1 
+                b.r = b.r <= 0 ? 5 : b.r>=100 || b.r*1.1 >= 100 ? 100 : b.r*1.1
 
             bushes[i].r = b.r
             bushes[i].e = b.e
@@ -189,6 +191,7 @@ function draw()
                     return
                 }
                 console.log(data)
+                data.push({id: -1, e: -1, r: score})
                 state = 'change'
             }
             break
