@@ -17,6 +17,7 @@ let row = canvas.height/3   // Height of one partition
 //  Create a Video element to play during foraging
 let vid = document.createElement("video")
 vid.src = "harvest.mp4"
+vid.loop = true
 
 // Create a Audio Element for Background Noise
 var audio = document.createElement("AUDIO")
@@ -201,16 +202,26 @@ function draw()
             break
 
         case 'forage':
+            if(c === 440)
+            {
+                update(dest)
+                score += bushes[dest].r
+                vid.pause()
+            }
+            
+            if(c > 440)
+            {
+                ctx.fillStyle = 'white'
+                ctx.fillText("+" + bushes[dest].r, bushes[dest].x, bushes[dest].y)
+            }
+            else
+                ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, row/2)
+            
             if(c === 500)
             {
                 action = ''
                 c = 0
-                update(dest)
-                score += bushes[dest].r
-                vid.pause()
-                vid.load()
             }
-            ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, row/2)
             c++
             break
 
