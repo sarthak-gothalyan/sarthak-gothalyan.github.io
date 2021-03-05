@@ -72,7 +72,8 @@ function isInside(rw, rh, rx, ry, x, y)
             
             
 //  Consatants Defined
-const speed = Math.sqrt((canvas.width/1000)*(canvas.width/1000) + (canvas.height/1000)*(canvas.width/1000))
+const dt = 5
+const speed = col/(100*dt)
 let dest = -1
 let p_pos = {x: col*3-col/4, y: row+row/4}
 let action = ""
@@ -82,7 +83,7 @@ let tc = 0  // Counter For Time
 let score = 0
 let data = []
 let state = 'initiate'
-let end = {m: 0, s: 10}
+let end = {m: 3, s: 0}
 let plays = 1
 let download = false
     
