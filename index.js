@@ -67,7 +67,7 @@ function isInside(rw, rh, rx, ry, x, y)
             
             
 //  Consatants Defined
-const dt = 5    // Time between adjacent bush
+const dt = 6    // Time between adjacent bush
 const speed = col/(100*dt)
 let dest = -1   // Destination Bush
 let p_pos = {x: col*3 - col/4, y: col/4 + col*Math.sin(Math.PI/3)}  // Player Position
@@ -136,9 +136,9 @@ document.addEventListener("keypress", (e) =>
 document.addEventListener("click",  // For Click 
     (e) =>
     {
-        state = 'start'
-        if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y) && isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, e.clientX, e.clientY))
+        if(bushes[dest].x === p_pos.x && bushes[dest].y === p_pos.y && isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, e.clientX, e.clientY))
         {    
+            state = 'start'
             action = 'forage'
             vid.play()
         }
@@ -171,7 +171,7 @@ function update(patch)
             else if(b.empty)
                 return
             else
-                b.r = b.r <= 0 ? 5 : b.r>=100 || b.r*1.1 >= 100 ? 100 : Math.floor(b.r*1.1)
+                b.r = b.r <= 0 ? 3 : b.r>=100 || b.r*1.3 >= 100 ? 100 : Math.floor(b.r*1.3)
 
             bushes[i].r = b.r
             bushes[i].e = b.e
@@ -257,7 +257,7 @@ function draw()
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             action = ''
             tc = 0
-            p_pos = {x: col*3-col/4, y: col/4 + col*Math.sin(Math.PI/3)}
+            p_pos = {x: col*3 - col/4, y: col/4 + col*Math.sin(Math.PI/3)}
             score = 0
             // Update End Condition
             bushes = 
@@ -265,7 +265,7 @@ function draw()
                 {id: 1, x: col*2+col/4, y: col/4, e: 0, r: 80, empty: false},
                 {id: 2, x: col*3+col/4, y: col/4, e: 0, r: 80, empty: false},
                 {id: 6, x: col*2+col/4 - col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
-                {id: 3, x: col*3 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
+                {id: 3, x: col*3+col/4 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
                 {id: 5, x: col*2+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
                 {id: 4, x: col*3+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false}
             ]
