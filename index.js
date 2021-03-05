@@ -262,12 +262,12 @@ function draw()
             // Update End Condition
             bushes = 
             [
-                {id: 1, x: col*2+col/4, y: row/4, e: 0, r: 80, empty: false},
-                {id: 2, x: col*3+col/4, y: row/4, e: 0, r: 80, empty: false},
-                {id: 6, x: col+col/4, y: row+row/4, e: 0, r: 80, empty: false},
-                {id: 3, x: col*4+col/4, y: row+row/4, e: 0, r: 80, empty: false},
-                {id: 5, x: col*2+col/4, y: row*2+row/4, e: 0, r: 80, empty: false},
-                {id: 4, x: col*3+col/4, y: row*2+row/4, e: 0, r: 80, empty: false}
+                {id: 1, x: col*2+col/4, y: col/4, e: 0, r: 80, empty: false},
+                {id: 2, x: col*3+col/4, y: col/4, e: 0, r: 80, empty: false},
+                {id: 6, x: col*2+col/4 - col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
+                {id: 3, x: col*3 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
+                {id: 5, x: col*2+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
+                {id: 4, x: col*3+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false}
             ]
             ctx.fillStyle = 'black'
             ctx.fillText("We will now move to a new forest to forage.", col*2, row)
