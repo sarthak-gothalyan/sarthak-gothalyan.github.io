@@ -130,6 +130,21 @@ document.addEventListener("keypress", (e) =>
     }
 )
 
+document.addEventListener("click",
+    function()
+    {
+        if(e.code === 'Space')
+        {
+            state = 'start'
+            if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
+            {    
+                action = 'forage'
+                vid.play()
+            }
+        }
+    }
+)
+
 //  Check if Player Reached the target Bush
 function reached(p, d, skip)
 {
