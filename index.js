@@ -11,6 +11,7 @@ ctx.fillStyle = "green"
 ctx.fillRect(0, 0, canvas.width, canvas.height)
 ctx.stroke()
 
+//  X, Y Partitions
 let col = canvas.width/6    // Width of one partition
 let row = canvas.height/3   // Height of one partition
 
@@ -66,20 +67,20 @@ function isInside(rw, rh, rx, ry, x, y)
             
             
 //  Consatants Defined
-const dt = 5
+const dt = 5    // Time between adjacent bush
 const speed = col/(100*dt)
-let dest = -1
-let p_pos = {x: col*3-col/4, y: row+row/4}
-let action = ""
-let skip = {x: 0, y: 0}
+let dest = -1   // Destination Bush
+let p_pos = {x: col*3-col/4, y: row+row/4}  // Player Position
+let action = ""     // Action
+let skip = {x: 0, y: 0}     // X, Y parts of speed
 let c = 0   // Counter For Timeskip
 let tc = 0  // Counter For Time
 let score = 0
-let data = []
-let state = 'initiate'
-let end = {m: 3, s: 0}
-let plays = 1
-let download = false
+let data = []   // Data Collected in array form
+let state = 'initiate'  // State of Game
+let end = {m: 3, s: 0}  //  End time of Single Playthrough
+let plays = 1   // Playthrough Count
+let download = false    // So csv Downloads Just once
     
     
 // Create a Audio Element for Background Noise
@@ -94,7 +95,7 @@ document.body.addEventListener("mousemove", // Add Mouse Movement as audio start
     }
 )
 
-//  Set Click Event
+//  Set Event for Fixing a Destination Bush
 canvas.addEventListener("click", (e) =>
     {
         let pos = {x: e.clientX, y: e.clientY}  // Click Position
@@ -116,6 +117,7 @@ canvas.addEventListener("click", (e) =>
     }
 )
 
+//  Set Event for Foraging
 document.addEventListener("keypress", (e) =>
     {
         if(e.code === 'Space')
@@ -130,17 +132,14 @@ document.addEventListener("keypress", (e) =>
     }
 )
 
-document.addEventListener("click",
+document.addEventListener("click",  // For Mobiles
     function()
     {
-        if(e.code === 'Space')
-        {
-            state = 'start'
-            if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
-            {    
-                action = 'forage'
-                vid.play()
-            }
+        state = 'start'
+        if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
+        {    
+            action = 'forage'
+            vid.play()
         }
     }
 )
@@ -158,7 +157,7 @@ function reached(p, d, skip)
         return p.x <= d.x && p.y <= d.y
 }
 
-//  Update Rewards
+//  Update Rewards and Exploits
 function update(patch)
 {
     if(bushes[patch].empty)
@@ -179,7 +178,7 @@ function update(patch)
     )
 }
 
-//  Write Data to a file #1
+//  Write Data to a file
 function download_csv(data) {
     var csv = 'Bush_id,Exploit,Reward\n'
     data.forEach(
@@ -204,6 +203,7 @@ function draw()
     if(!loading)
     alert("loading")
     
+    // Clear Screen
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.beginPath()
     ctx.fillStyle = "green"
