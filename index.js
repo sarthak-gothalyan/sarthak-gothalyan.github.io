@@ -41,9 +41,6 @@ bush.addEventListener(
         bushes.forEach(
             rect => 
             {
-                ctx.beginPath() // Begin Draw
-                ctx.rect(rect.x, rect.y, col/2, row/2)  // (pos-x, pos-y, width, height)
-                ctx.stroke()    // End Draw
                 ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
             }    
         )
@@ -57,9 +54,6 @@ player.addEventListener(
     "load",
     function()
     {
-        ctx.beginPath() // Begin Draw
-        ctx.rect(col*3-col/4, row+row/4, col/2, row/2)  // (pos-x, pos-y, width, height)
-        ctx.stroke()    // End Draw
         ctx.drawImage(player, col*3-col/4, row+row/4, col/2, row/2) // (image, pos-x, pos-y, width, height)
     }
 )
@@ -124,12 +118,14 @@ canvas.addEventListener("click", (e) =>
 
 document.addEventListener("keypress", (e) =>
     {
-        state = 'start'
-        let temp = bushes.filter(rect => isInside(col/2, row/2, rect.x, rect.y, p_pos.x, p_pos.y) ? true : false)
-        if(temp.length > 0)
-        {    
-            action = 'forage'
-            vid.play()
+        if(e.code === 'Space')
+        {
+            state = 'start'
+            if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
+            {    
+                action = 'forage'
+                vid.play()
+            }
         }
     }
 )
@@ -266,7 +262,7 @@ function draw()
                 console.log(data)
             }
             ctx.fillStyle = 'black'
-            ctx.fillText("Thanks for playing.", col*2, row)
+            ctx.fillText("Thank you for playing.", col*2, row)
             return
     }
     
@@ -276,18 +272,12 @@ function draw()
             bushes.forEach(
                 rect => 
                 {
-                    ctx.beginPath() // Begin Draw
-                    ctx.rect(rect.x, rect.y, col/2, row/2)  // (pos-x, pos-y, width, height)
-                    ctx.stroke()    // End Draw
                     ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
                 }    
                 )
                 
             p_pos.x += skip.x
             p_pos.y += skip.y
-            ctx.beginPath() // Begin Draw
-            ctx.rect(p_pos.x, p_pos.y, col/2, row/2)  // (pos-x, pos-y, width, height)
-            ctx.stroke()    // End Draw
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
             
             if(reached(p_pos, bushes[dest], skip))
@@ -328,16 +318,10 @@ function draw()
             bushes.forEach(
                 rect => 
                 {
-                    ctx.beginPath() // Begin Draw
-                    ctx.rect(rect.x, rect.y, col/2, row/2)  // (pos-x, pos-y, width, height)
-                    ctx.stroke()    // End Draw
                     ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
                 }    
             )
 
-            ctx.beginPath() // Begin Draw
-            ctx.rect(p_pos.x, p_pos.y, col/2, row/2)  // (pos-x, pos-y, width, height)
-            ctx.stroke()    // End Draw
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
     }
     
