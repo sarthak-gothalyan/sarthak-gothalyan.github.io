@@ -153,7 +153,7 @@ function update(patch)
             else if(b.empty)
                 return
             else
-                b.r = b.r <= 0 ? 5 : b.r>=100 || b.r*1.1 >= 100 ? 100 : b.r*1.1
+                b.r = b.r <= 0 ? 5 : b.r>=100 || b.r*1.1 >= 100 ? 100 : Math.floor(b.r*1.1)
 
             bushes[i].r = b.r
             bushes[i].e = b.e
