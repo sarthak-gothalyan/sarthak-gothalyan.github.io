@@ -143,7 +143,7 @@ function update(patch)
         (b, i) =>
         {
             if(b.empty)
-                continue
+                return
 
             if(i === patch)
                 b.r = b.r <= 0 ? 0 : Math.floor(Math.pow(0.95, b.e++) * b.r)   // e gets up by 1 for each calculation
