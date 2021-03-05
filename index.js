@@ -11,23 +11,6 @@ ctx.fillStyle = "green"
 ctx.fillRect(0, 0, canvas.width, canvas.height)
 ctx.stroke()
 
-//  Random Draw
-function line(pos1, pos2)
-{
-    let x = pos1.x - pos2.x
-    let y = pos1.y - pos2.y
-    let dist = Math.sqrt()
-    ctx.beginPath();
-    ctx.fillStyle = 'black'
-    ctx.moveTo(pos1.x, pos1.y);
-    ctx.fillText("", pos1.x, pos1.y)
-    ctx.lineTo(pos2.x, pos2.y);
-    ctx.stroke();
-}
-
-line({x: col*2+col/4, y: col/4}, {x: col*3+col/4, y: col/4})
-line({x: col*3+col/4, y: col/4}, {x: col*3 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3)})
-
 //  X, Y Partitions
 let col = canvas.width/6    // Width of one partition
 let row = canvas.height/3   // Height of one partition
@@ -47,7 +30,7 @@ let bushes =
     {id: 1, x: col*2+col/4, y: col/4, e: 0, r: 0, empty: true},
     {id: 2, x: col*3+col/4, y: col/4, e: 0, r: 80, empty: false},
     {id: 6, x: col*2+col/4 - col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 0, empty: true},
-    {id: 3, x: col*3 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
+    {id: 3, x: col*3+col/4 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
     {id: 5, x: col*2+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
     {id: 4, x: col*3+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 0, empty: true}
 ]
@@ -72,7 +55,7 @@ player.addEventListener(
     "load",
     function()
     {
-        ctx.drawImage(player, col*3-col/4, col/4 + col*Math.sin(Math.PI/3), col/2, col/2) // (image, pos-x, pos-y, width, height)
+        ctx.drawImage(player, col*3 - col/4, col/4 + col*Math.sin(Math.PI/3), col/2, col/2) // (image, pos-x, pos-y, width, height)
     }
 )
    
@@ -87,7 +70,7 @@ function isInside(rw, rh, rx, ry, x, y)
 const dt = 5    // Time between adjacent bush
 const speed = col/(100*dt)
 let dest = -1   // Destination Bush
-let p_pos = {x: col*3-col/4, y: col/4 + col*Math.sin(Math.PI/3)}  // Player Position
+let p_pos = {x: col*3 - col/4, y: col/4 + col*Math.sin(Math.PI/3)}  // Player Position
 let action = ""     // Action
 let skip = {x: 0, y: 0}     // X, Y parts of speed
 let c = 0   // Counter For Timeskip
@@ -363,6 +346,7 @@ function draw()
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
     }
     
+    draw_random()   // Delete This
     tc++
 }
 setInterval(draw, 10)
