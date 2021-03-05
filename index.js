@@ -124,7 +124,7 @@ document.addEventListener("keypress", (e) =>
         if(e.code === 'Space')
         {
             state = 'start'
-            if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, e.clientX, e.clientY))
+            if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
             {    
                 action = 'forage'
                 vid.play()
@@ -137,7 +137,7 @@ document.addEventListener("click",  // For Click
     (e) =>
     {
         state = 'start'
-        if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y) && isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
+        if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y) && isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, e.clientX, e.clientY))
         {    
             action = 'forage'
             vid.play()
