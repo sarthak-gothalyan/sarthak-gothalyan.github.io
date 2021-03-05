@@ -87,6 +87,7 @@ let download = false    // So csv Downloads Just once
 var audio = document.createElement("AUDIO")
 document.body.appendChild(audio);
 audio.src = "forest.wav"
+audio.loop = true
 document.body.addEventListener("mousemove", // Add Mouse Movement as audio starter
     function () 
     {
@@ -132,8 +133,8 @@ document.addEventListener("keypress", (e) =>
     }
 )
 
-document.addEventListener("click",  // For Mobiles
-    function()
+document.addEventListener("click",  // For Click 
+    (e) =>
     {
         state = 'start'
         if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
@@ -195,6 +196,10 @@ function download_csv(data) {
     hiddenElement.download = 'data.csv';
     hiddenElement.click();
 }
+
+// Random Outputs
+console.log('speed: ' + speed)
+console.log('')
 
 //  Update Loop
 function draw()
@@ -289,18 +294,19 @@ function draw()
                 {
                     ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
                 }    
-                )
+            )
                 
-            p_pos.x += skip.x
-            p_pos.y += skip.y
-            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
-            
             if(reached(p_pos, bushes[dest], skip))
             {
                 action = ''
                 p_pos.x = bushes[dest].x
                 p_pos.y = bushes[dest].y
+                break
             }
+
+            p_pos.x += skip.x
+            p_pos.y += skip.y
+            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
             
             break
 
