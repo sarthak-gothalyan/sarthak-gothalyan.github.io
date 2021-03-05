@@ -19,16 +19,6 @@ let vid = document.createElement("video")
 vid.src = "harvest.mp4"
 vid.loop = true
 
-// Create a Audio Element for Background Noise
-var audio = document.createElement("AUDIO")
-document.body.appendChild(audio);
-audio.src = "forest.wav"
-document.body.addEventListener("mousemove", // Add Mouse Movement as audio starter
-    function () 
-    {
-        audio.play()
-    }
-)
 
 //  Draw Bushes
 let bush = new Image()
@@ -59,7 +49,7 @@ bush.addEventListener(
         )
     }
 )
-
+        
 // Draw Player
 let player = new Image()
 player.src = 'man.png'
@@ -73,13 +63,14 @@ player.addEventListener(
         ctx.drawImage(player, col*3-col/4, row+row/4, col/2, row/2) // (image, pos-x, pos-y, width, height)
     }
 )
-
+   
+//  Check if Mouse click is inside bush
 function isInside(rw, rh, rx, ry, x, y)
 {
     return x <= rx+rw && x >= rx && y <= ry+rh && y >= ry   // Get Click Inside a Bush
 }
-
-
+            
+            
 //  Consatants Defined
 const speed = Math.sqrt((canvas.width/1000)*(canvas.width/1000) + (canvas.height/1000)*(canvas.width/1000))
 let dest = -1
@@ -90,8 +81,23 @@ let c = 0   // Counter For Timeskip
 let tc = 0  // Counter For Time
 let score = 0
 let data = []
-let state = 'start'
-let end = {m: 3, s: 0}
+let state = 'initiate'
+let end = {m: 0, s: 10}
+let plays = 1
+let download = false
+    
+    
+// Create a Audio Element for Background Noise
+var audio = document.createElement("AUDIO")
+document.body.appendChild(audio);
+audio.src = "forest.wav"
+document.body.addEventListener("mousemove", // Add Mouse Movement as audio starter
+    function () 
+    {
+        if(!(state === 'initiate'))
+            audio.play()
+    }
+)
 
 //  Set Click Event
 canvas.addEventListener("click", (e) =>
@@ -161,6 +167,24 @@ function update(patch)
     )
 }
 
+//  Write Data to a file #1
+function download_csv(data) {
+    var csv = 'Bush_id,Exploit,Reward\n'
+    data.forEach(
+        row => 
+        {
+            csv += row.join(',')
+            csv += "\n"
+        }
+    )
+  
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'data.csv';
+    hiddenElement.click();
+}
+
 //  Update Loop
 function draw()
 {
@@ -176,6 +200,21 @@ function draw()
     
     switch(state)
     {
+        case 'initiate':
+            ctx.fillStyle = 'black'
+            ctx.fillText("Welcome To The Virtual Foraging Task", col, row/4)
+            ctx.fillText("You are in the center of a field surrounded by 6 berry shrubs.", col, row/2)
+            ctx.fillText("All the shrubs are equi distant from you and from their neighbours.", col, 3*row/4)
+            ctx.fillText("Click on the shrub you want to pick beries from.", col, row)
+            ctx.fillText("You have a total of 5 mins to harvest as much berries as you can.", col, row+row/4)
+            ctx.fillText("Travel Time is proportional to the distance between shrubs.", col, row+row/2)
+            ctx.fillText("For any adjacent shrub, Travel Time costs 1 sec.", col, row+3*row/4)
+            ctx.fillText("After pressing Spacebar while on a shrub, wait for the reward to popup.This is your berry harvest time.", col, row*2)
+            ctx.fillText("For any shrub, Harvesting Time costs 0.5 sec.", col, row*2+row/4)
+            ctx.fillText("Happy Foraging.", col, row*2+row/2)
+            ctx.fillText("Press space to continue", col, row*2+3*row/4)
+            return
+
         case 'start':
             ctx.fillStyle = 'black'
             let seconds = Math.floor(tc/100)
@@ -185,31 +224,46 @@ function draw()
             ctx.fillText("Score: " + score, col/4, row/2.5)
             if(minutes === end.m && seconds === end.s)
             {
-                if(end.m === 4 && end.s === 0)
+                if(plays === 2)
                 {
                     state = 'end'
                     return
                 }
-                console.log(data)
-                data.push({id: -1, e: -1, r: score})
+                ++plays
+                data.push([-1, -1, score])
                 state = 'change'
+                bush.src = "bush.png"
             }
             break
             
         case 'change':
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
             action = ''
             tc = 0
             p_pos = {x: col*3-col/4, y: row+row/4}
             score = 0
-            data = []
-            end = {m: 4, s: 0}
-            // Update Bushes
+            // Update End Condition
+            bushes = 
+            [
+                {id: 1, x: col*2+col/4, y: row/4, e: 0, r: 80, empty: false},
+                {id: 2, x: col*3+col/4, y: row/4, e: 0, r: 80, empty: false},
+                {id: 6, x: col+col/4, y: row+row/4, e: 0, r: 80, empty: false},
+                {id: 3, x: col*4+col/4, y: row+row/4, e: 0, r: 80, empty: false},
+                {id: 5, x: col*2+col/4, y: row*2+row/4, e: 0, r: 80, empty: false},
+                {id: 4, x: col*3+col/4, y: row*2+row/4, e: 0, r: 80, empty: false}
+            ]
             ctx.fillStyle = 'black'
             ctx.fillText("We will now move to a new forest to forage.", col*2, row)
             ctx.fillText("Press space to continue foraging.", col*2, row+row/4)
             return
         
         case 'end':
+            if(!download)
+            {
+                download_csv(data)
+                download = true
+                console.log(data)
+            }
             ctx.fillStyle = 'black'
             ctx.fillText("Thanks for playing.", col*2, row)
             return
@@ -249,7 +303,7 @@ function draw()
             {
                 update(dest)
                 score += bushes[dest].r
-                data.push({id: bushes[dest].id, e: bushes[dest].e, r: bushes[dest].r})
+                data.push([bushes[dest].id, bushes[dest].e, bushes[dest].r])
                 vid.pause()
             }
             
