@@ -89,6 +89,9 @@ let skip = {x: 0, y: 0}
 let c = 0   // Counter For Timeskip
 let tc = 0  // Counter For Time
 let score = 0
+let data = []
+let state = 'start'
+let end = {m: 3, s: 0}
 
 //  Set Click Event
 canvas.addEventListener("click", (e) =>
@@ -114,6 +117,7 @@ canvas.addEventListener("click", (e) =>
 
 document.addEventListener("keypress", (e) =>
     {
+        state = 'start'
         let temp = bushes.filter(rect => isInside(col/2, row/2, rect.x, rect.y, p_pos.x, p_pos.y) ? true : false)
         if(temp.length > 0)
         {    
@@ -139,12 +143,11 @@ function reached(p, d, skip)
 //  Update Rewards
 function update(patch)
 {
+    if(bushes[patch].empty)
+        return
     bushes.forEach(
         (b, i) =>
         {
-            if(b.empty)
-                return
-
             if(i === patch)
                 b.r = b.r <= 0 ? 0 : Math.floor(Math.pow(0.95, b.e++) * b.r)   // e gets up by 1 for each calculation
             else
@@ -161,20 +164,54 @@ function draw()
 {
     let loading = bush.complete && player.complete  // Pause If Resources Not Loaded
     if(!loading)
-        alert("loading")
-
+    alert("loading")
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.beginPath()
     ctx.fillStyle = "green"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.stroke()
-    ctx.fillStyle = 'black'
-    let seconds = Math.floor(tc/100)
-    let minutes = Math.floor(seconds/60)
-    seconds = seconds%60
-    ctx.fillText(`Time: ${minutes}:${seconds}`, col/4, row/4)
-    ctx.fillText("Score: " + score, col/4, row/2.5)
-
+    
+    switch(state)
+    {
+        case 'start':
+            ctx.fillStyle = 'black'
+            let seconds = Math.floor(tc/100)
+            let minutes = Math.floor(seconds/60)
+            seconds = seconds%60
+            ctx.fillText(`Time: ${minutes}:${seconds}`, col/4, row/4)
+            ctx.fillText("Score: " + score, col/4, row/2.5)
+            if(minutes === end.m && seconds === end.s)
+            {
+                if(end.m === 4 && end.s === 0)
+                {
+                    state = 'end'
+                    return
+                }
+                console.log(data)
+                state = 'change'
+            }
+            break
+            
+        case 'change':
+            action = ''
+            tc = 0
+            p_pos = {x: col*3-col/4, y: row+row/4}
+            score = 0
+            data = []
+            end = {m: 4, s: 0}
+            // Update Bushes
+            ctx.fillStyle = 'black'
+            ctx.fillText("We will now move to a new forest to forage.", col*2, row)
+            ctx.fillText("Press space to continue foraging.", col*2, row+row/4)
+            return
+        
+        case 'end':
+            ctx.fillStyle = 'black'
+            ctx.fillText("Thanks for playing.", col*2, row)
+            return
+    }
+    
     switch(action)
     {
         case 'moving':
@@ -186,15 +223,15 @@ function draw()
                     ctx.stroke()    // End Draw
                     ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
                 }    
-            )
-
+                )
+                
             p_pos.x += skip.x
             p_pos.y += skip.y
             ctx.beginPath() // Begin Draw
             ctx.rect(p_pos.x, p_pos.y, col/2, row/2)  // (pos-x, pos-y, width, height)
             ctx.stroke()    // End Draw
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
-
+            
             if(reached(p_pos, bushes[dest], skip))
             {
                 action = ''
@@ -209,6 +246,7 @@ function draw()
             {
                 update(dest)
                 score += bushes[dest].r
+                data.push({id: bushes[dest].id, e: bushes[dest].e, r: bushes[dest].r})
                 vid.pause()
             }
             
@@ -218,7 +256,7 @@ function draw()
                 ctx.fillText("+" + bushes[dest].r, bushes[dest].x, bushes[dest].y)
             }
             else
-                ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, row/2)
+            ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, row/2)
             
             if(c === 500)
             {
@@ -227,7 +265,7 @@ function draw()
             }
             c++
             break
-
+                
         default:
             bushes.forEach(
                 rect => 
@@ -244,7 +282,7 @@ function draw()
             ctx.stroke()    // End Draw
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
     }
-
+    
     tc++
 }
 setInterval(draw, 10)
