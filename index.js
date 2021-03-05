@@ -11,6 +11,23 @@ ctx.fillStyle = "green"
 ctx.fillRect(0, 0, canvas.width, canvas.height)
 ctx.stroke()
 
+//  Random Draw
+function line(pos1, pos2)
+{
+    let x = pos1.x - pos2.x
+    let y = pos1.y - pos2.y
+    let dist = Math.sqrt()
+    ctx.beginPath();
+    ctx.fillStyle = 'black'
+    ctx.moveTo(pos1.x, pos1.y);
+    ctx.fillText("", pos1.x, pos1.y)
+    ctx.lineTo(pos2.x, pos2.y);
+    ctx.stroke();
+}
+
+line({x: col*2+col/4, y: col/4}, {x: col*3+col/4, y: col/4})
+line({x: col*3+col/4, y: col/4}, {x: col*3 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3)})
+
 //  X, Y Partitions
 let col = canvas.width/6    // Width of one partition
 let row = canvas.height/3   // Height of one partition
@@ -42,7 +59,7 @@ bush.addEventListener(
         bushes.forEach(
             rect => 
             {
-                ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
+                ctx.drawImage(bush, rect.x, rect.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
             }    
         )
     }
@@ -55,7 +72,7 @@ player.addEventListener(
     "load",
     function()
     {
-        ctx.drawImage(player, col*3-col/4, row+row/4, col/2, row/2) // (image, pos-x, pos-y, width, height)
+        ctx.drawImage(player, col*3-col/4, col/4 + col*Math.sin(Math.PI/3), col/2, col/2) // (image, pos-x, pos-y, width, height)
     }
 )
    
@@ -70,7 +87,7 @@ function isInside(rw, rh, rx, ry, x, y)
 const dt = 5    // Time between adjacent bush
 const speed = col/(100*dt)
 let dest = -1   // Destination Bush
-let p_pos = {x: col*3-col/4, y: row+row/4}  // Player Position
+let p_pos = {x: col*3-col/4, y: col/4 + col*Math.sin(Math.PI/3)}  // Player Position
 let action = ""     // Action
 let skip = {x: 0, y: 0}     // X, Y parts of speed
 let c = 0   // Counter For Timeskip
@@ -103,7 +120,7 @@ canvas.addEventListener("click", (e) =>
         bushes.forEach( // Check for each Bush
             (rect, i) =>
             {
-                if(isInside(col/2, row/2, rect.x, rect.y, pos.x, pos.y) && action !== 'moving')
+                if(isInside(col/2, col/2, rect.x, rect.y, pos.x, pos.y) && action !== 'moving')
                 {
                     action = "moving"
                     dest = i
@@ -124,7 +141,7 @@ document.addEventListener("keypress", (e) =>
         if(e.code === 'Space')
         {
             state = 'start'
-            if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
+            if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, e.clientX, e.clientY))
             {    
                 action = 'forage'
                 vid.play()
@@ -137,7 +154,7 @@ document.addEventListener("click",  // For Click
     (e) =>
     {
         state = 'start'
-        if(isInside(col/2, row/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
+        if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y) && isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
         {    
             action = 'forage'
             vid.play()
@@ -257,7 +274,7 @@ function draw()
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             action = ''
             tc = 0
-            p_pos = {x: col*3-col/4, y: row+row/4}
+            p_pos = {x: col*3-col/4, y: col/4 + col*Math.sin(Math.PI/3)}
             score = 0
             // Update End Condition
             bushes = 
@@ -292,7 +309,7 @@ function draw()
             bushes.forEach(
                 rect => 
                 {
-                    ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
+                    ctx.drawImage(bush, rect.x, rect.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
                 }    
             )
                 
@@ -306,7 +323,7 @@ function draw()
 
             p_pos.x += skip.x
             p_pos.y += skip.y
-            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
+            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
             
             break
 
@@ -325,7 +342,7 @@ function draw()
                 ctx.fillText("+" + bushes[dest].r, bushes[dest].x, bushes[dest].y)
             }
             else
-            ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, row/2)
+            ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, col/2)
             
             if(c === 500)
             {
@@ -339,11 +356,11 @@ function draw()
             bushes.forEach(
                 rect => 
                 {
-                    ctx.drawImage(bush, rect.x, rect.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
+                    ctx.drawImage(bush, rect.x, rect.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
                 }    
             )
 
-            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, row/2) // (image, pos-x, pos-y, width, height)
+            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
     }
     
     tc++
