@@ -346,7 +346,6 @@ function draw()
             ctx.drawImage(player, p_pos.x, p_pos.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
     }
     
-    draw_random()   // Delete This
     tc++
 }
 setInterval(draw, 10)
