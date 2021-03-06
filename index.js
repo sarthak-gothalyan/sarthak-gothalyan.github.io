@@ -1,175 +1,144 @@
-//  Canvas Attributes Set
-let canvas = document.querySelector("canvas")
-canvas.setAttribute("width", canvas.parentNode.offsetWidth)
-canvas.setAttribute("height", canvas.parentNode.offsetHeight)
-let ctx = canvas.getContext("2d")   // Get Draw Context
-ctx.font = "30px Arial" // Set Font For UI
+// Canvas Attributes
+let canvas1 = document.querySelector('#l1')
+let canvas2 = document.querySelector('#l2')
+canvas1.setAttribute("width", canvas1.parentNode.offsetWidth)
+canvas1.setAttribute("height", canvas1.parentNode.offsetHeight)
+canvas2.setAttribute("width", canvas2.parentNode.offsetWidth)
+canvas2.setAttribute("height", canvas2.parentNode.offsetHeight)
+let ctx1 = canvas1.getContext("2d")
+let ctx2 = canvas2.getContext("2d")
+ctx2.font = '30px Arial'
 
-//  Colour Entire Screen Green
-ctx.beginPath()
-ctx.fillStyle = "green"
-ctx.fillRect(0, 0, canvas.width, canvas.height)
-ctx.stroke()
+// Get Measurement Units
+let xu = canvas1.width/12
+let yu = canvas1.height/12
 
-//  X, Y Partitions
-let col = canvas.width/6    // Width of one partition
-let row = canvas.height/3   // Height of one partition
+// Colour Base Canvas Green and Top canvas Blue
+ctx1.beginPath()
+ctx1.fillStyle = 'green'
+ctx1.fillRect(0, 0, canvas1.width, canvas1.height)
+ctx1.stroke()
+ctx2.beginPath()
+ctx2.fillStyle = 'green'
+ctx2.fillRect(0, 0, canvas2.width, canvas2.height)
+ctx2.stroke()
 
-//  Create a Video element to play during foraging
+// Load and Draw Berries
+let bush = new Image()
+bush.src = "berry.png"
+let bushes = 
+[
+    {id: 1, x: 10*xu, y: yu, e: 0, r: 80},
+    {id: 2, x: 6*xu, y: 2*yu, e: 0, r: 80},
+    {id: 3, x: 9*xu, y: 3*yu, e: 0, r: 80}
+]
+bush.addEventListener("load",
+    function()
+    {
+        bushes.forEach(
+            bush_p =>
+            {
+                ctx1.drawImage(bush, bush_p.x, bush_p.y, xu, yu)
+            }
+        )
+    }
+)
+
+// Load Video
 let vid = document.createElement("video")
 vid.src = "harvest.mp4"
 vid.loop = true
 
-
-//  Draw Bushes
-let bush = new Image()
-bush.src = 'berry.png'
-// Set Bush Attributes
-let bushes = 
-[
-    {id: 1, x: col*2+col/4, y: col/4, e: 0, r: 0, empty: true},
-    {id: 2, x: col*3+col/4, y: col/4, e: 0, r: 80, empty: false},
-    {id: 6, x: col*2+col/4 - col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 0, empty: true},
-    {id: 3, x: col*3+col/4 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
-    {id: 5, x: col*2+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
-    {id: 4, x: col*3+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 0, empty: true}
-]
-// Draw Bush on load
-bush.addEventListener(
-    "load",
-    function()
-    {
-        bushes.forEach(
-            rect => 
-            {
-                ctx.drawImage(bush, rect.x, rect.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
-            }    
-        )
-    }
-)
-        
-// Draw Player
-let player = new Image()
-player.src = 'man.png'
-player.addEventListener(
-    "load",
-    function()
-    {
-        ctx.drawImage(player, col*3 - col/4, col/4 + col*Math.sin(Math.PI/3), col/2, col/2) // (image, pos-x, pos-y, width, height)
-    }
-)
-   
-//  Check if Mouse click is inside bush
-function isInside(rw, rh, rx, ry, x, y)
-{
-    return x <= rx+rw && x >= rx && y <= ry+rh && y >= ry   // Get Click Inside a Bush
-}
-            
-            
-//  Consatants Defined
-const dt = 6    // Time between adjacent bush
-const speed = col/(100*dt)
-let dest = -1   // Destination Bush
-let p_pos = {x: col*3 - col/4, y: col/4 + col*Math.sin(Math.PI/3)}  // Player Position
-let action = ""     // Action
-let skip = {x: 0, y: 0}     // X, Y parts of speed
-let c = 0   // Counter For Timeskip
-let tc = 0  // Counter For Time
-let score = 0
-let data = []   // Data Collected in array form
-let state = 'initiate'  // State of Game
-let end = {m: 3, s: 0}  //  End time of Single Playthrough
-let plays = 1   // Playthrough Count
-let download = false    // So csv Downloads Just once
-    
-    
 // Create a Audio Element for Background Noise
 var audio = document.createElement("AUDIO")
 document.body.appendChild(audio);
 audio.src = "forest.wav"
 audio.loop = true
-document.body.addEventListener("mousemove", // Add Mouse Movement as audio starter
-    function () 
+
+// Global Variables
+let state = 'initiate'
+let action = ''
+let change = false
+let dest = -1
+let c = 0
+let tc = 0
+let data = []
+let score = 0
+let plays = 1
+let end = {m: 3, s: 0}
+let download = false
+let curr_p = {x: 0, y: 0}
+
+// Space Key-press Event for Changing Scene
+document.addEventListener("keypress", (e) =>
     {
-        if(!(state === 'initiate'))
-            audio.play()
+        if(e.code === 'Space' && state !== 'start')
+            state = 'start'
     }
 )
 
-//  Set Event for Fixing a Destination Bush
-canvas.addEventListener("click", (e) =>
+// Clear Circular Area
+document.addEventListener("mousemove",
+    (e) =>
     {
-        let pos = {x: e.clientX, y: e.clientY}  // Click Position
-        bushes.forEach( // Check for each Bush
-            (rect, i) =>
+        curr_p.x = e.clientX
+        curr_p.y = e.clientY
+        if(state !== 'initiate')
+            audio.play()
+        if(action !== 'forage' && state === 'start')
+        {
+            ctx2.beginPath()
+            ctx2.fillStyle = 'green'
+            ctx2.fillRect(2*xu, 0, canvas2.width, canvas2.height)
+            ctx2.globalCompositeOperation = 'destination-out'
+            ctx2.beginPath() 
+            ctx2.arc(e.clientX, e.clientY, 100, 0, 2*Math.PI)
+            ctx2.closePath()
+            ctx2.fill()
+            ctx2.globalCompositeOperation = 'source-over'
+        }
+    }
+)
+
+// Check if Inside Bush Area
+function isInside(rw, rh, rx, ry, x, y)
+{
+    return x <= rx+rw && x >= rx && y <= ry+rh && y >= ry   // Get Click Inside a Bush
+}
+
+// Listen To Clicks
+document.addEventListener("click",
+    (e) =>
+    {
+        if(state !== 'start')
+        {
+            state = 'start'
+            ctx2.clearRect(0, 0, canvas2.width, canvas2.height)
+            ctx2.fillStyle = 'green'
+            ctx2.fillRect(2*xu, 0, canvas2.width, canvas2.height)
+        }
+        bushes.forEach(
+            (b, i) =>
             {
-                if(isInside(col/2, col/2, rect.x, rect.y, pos.x, pos.y) && action !== 'moving')
+                if(isInside(xu, yu, b.x, b.y, e.clientX, e.clientY) && action !== 'forage')
                 {
-                    action = "moving"
+                    action = 'forage'
+                    change = true
                     dest = i
-                    const p = bushes[dest].x - p_pos.x
-                    const b = bushes[dest].y - p_pos.y
-                    const h = Math.sqrt(p*p + b*b)
-                    skip.x = speed * p/h
-                    skip.y = speed * b/h                                   
                 }
             }
         )
     }
 )
 
-//  Set Event for Foraging
-document.addEventListener("keypress", (e) =>
-    {
-        if(e.code === 'Space')
-        {
-            state = 'start'
-            if(isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, p_pos.x, p_pos.y))
-            {    
-                action = 'forage'
-                vid.play()
-            }
-        }
-    }
-)
-
-document.addEventListener("click",  // For Click 
-    (e) =>
-    {
-        if(bushes[dest].x === p_pos.x && bushes[dest].y === p_pos.y && isInside(col/2, col/2, bushes[dest].x, bushes[dest].y, e.clientX, e.clientY))
-        {    
-            state = 'start'
-            action = 'forage'
-            vid.play()
-        }
-    }
-)
-
-//  Check if Player Reached the target Bush
-function reached(p, d, skip)
-{
-    if(skip.x >= 0 && skip.y >= 0)
-        return p.x >= d.x && p.y >= d.y
-    else if(skip.x >= 0 && skip.y <= 0)
-        return p.x >= d.x && p.y <= d.y
-    else if(skip.x <= 0 && skip.y >= 0)
-        return p.x <= d.x && p.y >= d.y
-    else if(skip.x <= 0 && skip.y <= 0)
-        return p.x <= d.x && p.y <= d.y
-}
-
 //  Update Rewards and Exploits
 function update(patch)
 {
-    if(bushes[patch].empty)
-        return
     bushes.forEach(
         (b, i) =>
         {
             if(i === patch)
                 b.r = b.r <= 0 ? 0 : Math.floor(Math.pow(0.95, b.e++) * b.r)   // e gets up by 1 for each calculation
-            else if(b.empty)
-                return
             else
                 b.r = b.r <= 0 ? 3 : b.r>=100 || b.r*1.3 >= 100 ? 100 : Math.floor(b.r*1.3)
 
@@ -197,48 +166,41 @@ function download_csv(data) {
     hiddenElement.click();
 }
 
-// Random Outputs
-console.log('speed: ' + speed)
-console.log('')
-
-//  Update Loop
+// Game Loop
 function draw()
-{
-    let loading = bush.complete && player.complete  // Pause If Resources Not Loaded
+{   
+    let loading = bush.complete  // Pause If Resources Not Loaded
     if(!loading)
     alert("loading")
-    
-    // Clear Screen
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.beginPath()
-    ctx.fillStyle = "green"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.stroke()
-    
+    ctx2.clearRect(0, 0, canvas2.width, canvas2.height)
+    ctx2.fillStyle = 'green'
+    ctx2.fillRect(2*xu, 0, canvas2.width, canvas2.height)    
+    ctx2.globalCompositeOperation = 'source-over'
+
     switch(state)
     {
         case 'initiate':
-            ctx.fillStyle = 'black'
-            ctx.fillText("Welcome To The Virtual Foraging Task", col, row/4)
-            ctx.fillText("You are in the center of a field surrounded by 6 berry shrubs.", col, row/2)
-            ctx.fillText("All the shrubs are equi distant from you and from their neighbours.", col, 3*row/4)
-            ctx.fillText("Click on the shrub you want to pick beries from.", col, row)
-            ctx.fillText("You have a total of 5 mins to harvest as much berries as you can.", col, row+row/4)
-            ctx.fillText("Travel Time is proportional to the distance between shrubs.", col, row+row/2)
-            ctx.fillText("For any adjacent shrub, Travel Time costs 1 sec.", col, row+3*row/4)
-            ctx.fillText("After pressing Spacebar while on a shrub, wait for the reward to popup.This is your berry harvest time.", col, row*2)
-            ctx.fillText("For any shrub, Harvesting Time costs 0.5 sec.", col, row*2+row/4)
-            ctx.fillText("Happy Foraging.", col, row*2+row/2)
-            ctx.fillText("Press space to continue", col, row*2+3*row/4)
+            ctx2.fillStyle = 'black'
+            ctx2.fillText("Welcome To The Virtual Foraging Task", 3*xu, yu)
+            ctx2.fillText("You are in the center of a field surrounded by 6 berry shrubs.", 3*xu, yu + yu/2)
+            ctx2.fillText("All the shrubs are equi distant from you and from their neighbours.", 3*xu, 2*yu)
+            ctx2.fillText("Click on the shrub you want to pick beries from.", 3*xu, 2*yu + yu/2)
+            ctx2.fillText("You have a total of 5 mins to harvest as much berries as you can.", 3*xu, 3*yu)
+            ctx2.fillText("Travel Time is proportional to the distance between shrubs.", 3*xu, 3*yu + yu/2)
+            ctx2.fillText("For any adjacent shrub, Travel Time costs 1 sec.", 3*xu, 4*yu)
+            ctx2.fillText("After pressing Spacebar while on a shrub, wait for the reward to popup.This is your berry harvest time.", 3*xu, 4*yu + yu/2)
+            ctx2.fillText("For any shrub, Harvesting Time costs 0.5 sec.", 3*xu, 5*yu)
+            ctx2.fillText("Happy Foraging.", 3*xu, 5*yu + yu/2)
+            ctx2.fillText("Press space to continue", 3*xu, 6*yu)
             return
 
         case 'start':
-            ctx.fillStyle = 'black'
+            ctx2.fillStyle = 'black'
             let seconds = Math.floor(tc/100)
             let minutes = Math.floor(seconds/60)
             seconds = seconds%60
-            ctx.fillText(`Time: ${minutes}:${seconds}`, col/4, row/4)
-            ctx.fillText("Score: " + score, col/4, row/2.5)
+            ctx2.fillText(`Time: ${minutes}:${seconds}`, xu/3, yu)
+            ctx2.fillText("Score: " + score, xu/3, 2*yu)
             if(minutes === end.m && seconds === end.s)
             {
                 if(plays === 2)
@@ -249,83 +211,75 @@ function draw()
                 ++plays
                 data.push([-1, -1, score])
                 state = 'change'
+
+                ctx1.fillStyle = 'green'
+                ctx1.fillRect(0, 0, canvas1.width, canvas1.height)
+                bushes = 
+                [
+                    {id: 1, x: 7*xu, y: 400, e: 0, r: 80},
+                    {id: 3, x: 7*xu, y: 500, e: 0, r: 80},
+                    {id: 2, x: 7*xu, y: 600, e: 0, r: 80}
+                ]
                 bush.src = "bush.png"
             }
             break
             
         case 'change':
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            ctx2.fillStyle = 'green'
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height)
             action = ''
             tc = 0
-            p_pos = {x: col*3 - col/4, y: col/4 + col*Math.sin(Math.PI/3)}
             score = 0
             // Update End Condition
-            bushes = 
-            [
-                {id: 1, x: col*2+col/4, y: col/4, e: 0, r: 80, empty: false},
-                {id: 2, x: col*3+col/4, y: col/4, e: 0, r: 80, empty: false},
-                {id: 6, x: col*2+col/4 - col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
-                {id: 3, x: col*3+col/4 + col*Math.cos(Math.PI/3), y: col/4 + col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
-                {id: 5, x: col*2+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false},
-                {id: 4, x: col*3+col/4, y: col/4 + 2*col*Math.sin(Math.PI/3), e: 0, r: 80, empty: false}
-            ]
-            ctx.fillStyle = 'black'
-            ctx.fillText("We will now move to a new forest to forage.", col*2, row)
-            ctx.fillText("Press space to continue foraging.", col*2, row+row/4)
+            ctx2.fillStyle = 'black'
+            ctx2.fillText("We will now move to a new forest to forage.", 3*xu, yu)
+            ctx2.fillText("Press space to continue foraging.", 3*xu, 2*yu)
             return
         
         case 'end':
+            ctx2.fillStyle = 'green'
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height)
             if(!download)
             {
                 download_csv(data)
                 download = true
                 console.log(data)
             }
-            ctx.fillStyle = 'black'
-            ctx.fillText("Thank you for playing.", col*2, row)
+            ctx2.fillStyle = 'black'
+            ctx2.fillText("Thank you for playing.", 3*xu, 3*yu)
+            audio.pause()
             return
     }
-    
+
     switch(action)
     {
-        case 'moving':
-            bushes.forEach(
-                rect => 
-                {
-                    ctx.drawImage(bush, rect.x, rect.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
-                }    
-            )
-                
-            if(reached(p_pos, bushes[dest], skip))
-            {
-                action = ''
-                p_pos.x = bushes[dest].x
-                p_pos.y = bushes[dest].y
-                break
-            }
-
-            p_pos.x += skip.x
-            p_pos.y += skip.y
-            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
-            
-            break
-
         case 'forage':
+            if(change)
+            {
+                change = false
+                ctx2.fillStyle = 'green'
+                ctx2.fillRect(2*xu, 0, canvas2.width, canvas2.height)
+                vid.play()
+            }
             if(c === 440)
             {
                 update(dest)
                 score += bushes[dest].r
                 data.push([bushes[dest].id, bushes[dest].e, bushes[dest].r])
                 vid.pause()
+
+                ctx2.fillStyle = 'green'
+                ctx2.fillRect(2*xu, 0, canvas2.width, canvas2.height)
+                console.log(c)
             }
             
-            if(c > 440)
+            if(c >= 440)
             {
-                ctx.fillStyle = 'white'
-                ctx.fillText("+" + bushes[dest].r, bushes[dest].x, bushes[dest].y)
+                ctx2.fillStyle = 'white'
+                ctx2.fillText("+" + bushes[dest].r, bushes[dest].x, bushes[dest].y)
             }
             else
-            ctx.drawImage(vid, bushes[dest].x, bushes[dest].y, col/2, col/2)
+                ctx2.drawImage(vid, bushes[dest].x, bushes[dest].y, xu, yu)
             
             if(c === 500)
             {
@@ -334,18 +288,11 @@ function draw()
             }
             c++
             break
-                
-        default:
-            bushes.forEach(
-                rect => 
-                {
-                    ctx.drawImage(bush, rect.x, rect.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
-                }    
-            )
 
-            ctx.drawImage(player, p_pos.x, p_pos.y, col/2, col/2) // (image, pos-x, pos-y, width, height)
+        default:
+            break
     }
-    
-    tc++
+
+    ++tc
 }
 setInterval(draw, 10)
