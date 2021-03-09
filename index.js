@@ -1,8 +1,51 @@
 // Set Canvas Attributes
 let canvas = document.querySelector("canvas")
-canvas.setAttribute("width", 1500)
-canvas.setAttribute("height", 1500)
+canvas.setAttribute("width", 1250)
+canvas.setAttribute("height", 750)
 let ctx = canvas.getContext("2d")
+ctx.font = "30px Arial"
+
+//  Check if inside bush
+function isInside(rw, rh, rx, ry, x, y)
+{
+    return x <= rx+rw && x >= rx && y <= ry+rh && y >= ry   // Get Click Inside a Bush
+}
+
+// Random List Generator
+function l(size, to_empty)
+{
+    let id = 1
+    let bushes = []
+    while(bushes.length <= size)
+    { 
+        let bush = {id: id, x: Math.floor(Math.random()*910) + 300, y: Math.floor(Math.random()*720) + 10, e: 0, r: 100, empty: false}
+        bushes = bushes.filter(b => !isInside(140, 140, bush.x - 70, bush.y - 70, b.x, b.y))
+        bushes.push(bush)
+        if(bushes.length === id)
+            ++id
+        else
+            continue
+    }
+    for(x = 0; x < to_empty; ++x)
+    {    
+        bushes[x].empty = true
+        bushes[x].r = 0
+    }
+    return bushes
+}
+
+// Random Time Generator
+function t(size)
+{
+    let times = []
+    while(times.length <= size)
+    { 
+        let time = Math.floor(Math.random()*100) + 10
+        times = times.filter(temp => !(temp === time))
+        times.push(time)
+    }
+    return times
+}
 
 // Load Image
 let bush = new Image()
@@ -19,6 +62,11 @@ document.body.appendChild(audio);
 audio.src = "forest.wav"
 audio.loop = true
 
+// Load Stressing Audio
+var stress = document.createElement("AUDIO")
+document.body.appendChild(stress);
+stress.src = "stressor.wav"
+stress.loop = true
 
 // Global Variables
 let pos = {x: 0, y: 0}
@@ -29,15 +77,31 @@ let tc = 0  // Counter For Time
 let score = 0
 let data = []   // Data Collected in array form
 let state = 'initiate'  // State of Game
-let end = {m: 0, s: 15}  //  End time of Single Playthrough
+let end = {m: 3, s: 0}  //  End time of Single Playthrough
 let plays = 1   // Playthrough Count
 let download = false    // So csv Downloads Just once
-let bushes = 
-[
-    {id: 1, x: 500, y: 500, e: 0, r: 100}
-]
+let bushes = l(10, 5)
+let noise_t = 0
+let noise_c = 0
+let times = t(5)
 
-// Update Reards
+// Stress Pauser
+document.addEventListener("keypress",
+    (e) =>
+    {
+        if(e.code === "Space" && !stress.paused)
+        {
+            ++noise_c
+            if(noise_c === 5)
+            {
+                noise_c = 0
+                stress.pause()
+            }
+        }
+    }
+)
+
+//  Update Rewards and Exploits
 function update(patch)
 {
     if(bushes[patch].empty)
@@ -47,6 +111,8 @@ function update(patch)
         {
             if(i === patch)
                 b.r = b.r <= 0 ? 0 : Math.floor(Math.pow(0.95, b.e++) * b.r)   // e gets up by 1 for each calculation
+            else if(b.empty)
+                return
             else
                 b.r = b.r <= 0 ? 3 : b.r>=100 || b.r*1.3 >= 100 ? 100 : Math.floor(b.r*1.3)
 
@@ -54,12 +120,6 @@ function update(patch)
             bushes[i].e = b.e
         }
     )
-}
-
-//  Check if inside bush
-function isInside(rw, rh, rx, ry, x, y)
-{
-    return x <= rx+rw && x >= rx && y <= ry+rh && y >= ry   // Get Click Inside a Bush
 }
 
 // Create Mouse-move Event
@@ -78,12 +138,15 @@ document.addEventListener("click",
     function (e)
     {
         if(state === "change" || state === "initiate")
+        {
+            tc = 0
             state = "start"
+        }
 
         bushes.forEach(
             (b, i) =>
             {
-                if(isInside(100, 100, b.x, b.y, e.clientX, e.clientY) && action === "searching" && state === "start")
+                if(isInside(30, 30, b.x, b.y, e.clientX, e.clientY) && action === "searching" && state === "start")
                 {
                     action = "forage"
                     dest = i
@@ -127,18 +190,16 @@ function draw()
     switch(state)
     {
         case 'initiate':
+            end.m = 3
             ctx.fillStyle = 'black'
             ctx.fillText("Welcome To The Virtual Foraging Task", 300, 100)
-            ctx.fillText("You are in the center of a field surrounded by 6 berry shrubs.", 300, 200)
-            ctx.fillText("All the shrubs are equi distant from you and from their neighbours.", 300, 300)
-            ctx.fillText("Click on the shrub you want to pick beries from.", 300, 400)
-            ctx.fillText("You have a total of 5 mins to harvest as much berries as you can.", 300, 500)
-            ctx.fillText("Travel Time is proportional to the distance between shrubs.", 300, 600)
-            ctx.fillText("For any adjacent shrub, Travel Time costs 1 sec.", 300, 700)
-            ctx.fillText("After pressing Spacebar while on a shrub, wait for the reward to popup.This is your berry harvest time.", 300, 800)
-            ctx.fillText("For any shrub, Harvesting Time costs 0.5 sec.", 300, 900)
-            ctx.fillText("Happy Foraging.", 300, 1000)
-            ctx.fillText("Press space to continue", 300, 1100)
+            ctx.fillText("You are in a field with hidden berry bushes.", 300, 150)
+            ctx.fillText("Move your mouse around to look for the bushes.", 300, 200)
+            ctx.fillText("Click on the shrub you want to pick beries from.", 300, 250)
+            ctx.fillText("You have a total of 3 mins to harvest as much berries as you can.", 300, 300)
+            ctx.fillText("For any shrub, Harvesting Time costs 0.5 sec.", 300, 350)
+            ctx.fillText("Happy Foraging.", 300, 400)
+            ctx.fillText("CLick to continue", 300, 450)
             return
 
         case 'start':
@@ -147,36 +208,75 @@ function draw()
             let minutes = Math.floor(seconds/60)
             seconds = seconds%60
             ctx.fillText(`Time: ${minutes}:${seconds}`, 100, 100)
-            ctx.fillText("Score: " + score, 100, 120)
+            ctx.fillText("Score: " + score, 100, 140)
+            if(!stress.paused)
+            {
+                ++noise_t
+                if(noise_t >= 500)
+                {
+                    noise_c = 0
+                    noise_t = 0
+                    stress.pause()
+                }
+            }
+            times.forEach(temp => 
+                {
+                    if(temp*100 === tc)
+                        stress.play()
+                }
+            )
             if(minutes === end.m && seconds === end.s)
             {
-                if(plays === 2)
+                switch(plays)
                 {
-                    state = 'end'
-                    audio.pause()
-                    return
+                    case 2:
+                        state = "change"
+                        ++plays
+                        data.push([-1, -1, score])
+                        bushes = l(15, 5)
+                        audio.pause()
+                        stress.pause()
+                        end.m = 3
+                        bush.src = "bush.png"
+                        return
+
+                    case 3:
+                        state = "change"
+                        ++plays
+                        data.push([-1, -1, score])
+                        bushes = l(15, 5)
+                        audio.pause()
+                        stress.pause()
+                        bush.src = "bush.png"
+                        return
+
+                    case 4:
+                        state = "change"
+                        ++plays
+                        data.push([-1, -1, score])
+                        bushes = l(15, 5)
+                        audio.pause()
+                        stress.pause()
+                        bush.src = "bush.png"
+                        return
+
+                    default:
+                        audio.pause()
+                        stress.pause()
+                        state = "end"
+                        return
                 }
-                ++plays
-                data.push([-1, -1, score])
-                state = 'change'
-                bush.src = "bush.png"
-                audio.pause()
             }
             break
             
         case 'change':
             ctx.clearRect(0, 0, canvas.width, canvas.height)
             action = 'searching'
-            tc = 0
             score = 0
             // Update End Condition
-            bushes = 
-            [
-                {id: 1, x: 500, y: 500, e: 0, r: 100},
-            ]
             ctx.fillStyle = 'black'
             ctx.fillText("We will now move to a new forest to forage.", 300, 300)
-            ctx.fillText("Press space to continue foraging.", 300, 300)
+            ctx.fillText("Click to continue foraging.", 300, 350)
             return
         
         case 'end':
@@ -197,8 +297,8 @@ function draw()
             bushes.forEach(
                 rect => 
                 {
-                    if(isInside(100, 100, rect.x, rect.y, pos.x, pos.y))
-                        ctx.drawImage(bush, rect.x, rect.y, 100, 100) // (image, pos-x, pos-y, width, height)
+                    if(isInside(30, 30, rect.x, rect.y, pos.x, pos.y))
+                        ctx.drawImage(bush, rect.x, rect.y, 30, 30) // (image, pos-x, pos-y, width, height)
                 }    
             )
             break
@@ -233,7 +333,7 @@ function draw()
             bushes.forEach(
                 rect => 
                 {
-                    ctx.drawImage(bush, rect.x, rect.y, 100, 100) // (image, pos-x, pos-y, width, height)
+                    ctx.drawImage(bush, rect.x, rect.y, 30, 30) // (image, pos-x, pos-y, width, height)
                 }    
             )
     }
