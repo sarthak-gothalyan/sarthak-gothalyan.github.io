@@ -4,6 +4,11 @@ canvas.setAttribute("width", 1250)
 canvas.setAttribute("height", 750)
 let ctx = canvas.getContext("2d")
 ctx.font = "30px Arial"
+let difficulty = document.querySelector("input")
+let sub = document.querySelector("button")
+sub.style.display = "none"
+difficulty.style.display = "none"
+difficulty.style.zIndex = +1
 
 //  Check if inside bush
 function isInside(rw, rh, rx, ry, x, y)
@@ -77,13 +82,17 @@ let tc = 0  // Counter For Time
 let score = 0
 let data = []   // Data Collected in array form
 let state = 'initiate'  // State of Game
-let end = {m: 3, s: 0}  //  End time of Single Playthrough
+let end = {m: 0, s: 3}  //  End time of Single Playthrough
 let plays = 1   // Playthrough Count
 let download = false    // So csv Downloads Just once
 let bushes = l(10, 5)
 let noise_t = 0
 let noise_c = 0
 let times = t(5)
+let get_difficulty = true
+let diff = 0;
+
+difficulty.addEventListener("change", (e) => {diff = difficulty.value})
 
 // Stress Pauser
 document.addEventListener("keypress",
@@ -178,6 +187,7 @@ function download_csv(data) {
 // Game Loop
 function draw()
 {
+    console.log(end)
     if(!bush.complete)
     {
         alert("loading")
@@ -190,7 +200,6 @@ function draw()
     switch(state)
     {
         case 'initiate':
-            end.m = 3
             ctx.fillStyle = 'black'
             ctx.fillText("Welcome To The Virtual Foraging Task", 300, 100)
             ctx.fillText("You are in a field with hidden berry bushes.", 300, 150)
@@ -229,6 +238,17 @@ function draw()
             {
                 switch(plays)
                 {
+                    case 1:
+                        state = "change"
+                        ++plays
+                        data.push([-1, -1, score])
+                        bushes = l(15, 5)
+                        audio.pause()
+                        stress.pause()
+                        end.m = 0
+                        bush.src = "bush.png"
+                        return
+
                     case 2:
                         state = "change"
                         ++plays
@@ -236,7 +256,7 @@ function draw()
                         bushes = l(15, 5)
                         audio.pause()
                         stress.pause()
-                        end.m = 3
+                        end.m = 0
                         bush.src = "bush.png"
                         return
 
@@ -263,6 +283,7 @@ function draw()
                     default:
                         audio.pause()
                         stress.pause()
+                        tc = 0;
                         state = "end"
                         return
                 }
@@ -270,7 +291,6 @@ function draw()
             break
             
         case 'change':
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
             action = 'searching'
             score = 0
             // Update End Condition
@@ -285,9 +305,20 @@ function draw()
                 download_csv(data)
                 download = true
             }
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-            ctx.fillStyle = 'black'
-            ctx.fillText("Thank you for playing.", 300, 300)
+            if(get_difficulty)
+            {
+                ctx.fillStyle = 'black'
+                ctx.fillText("Please give difficulty.", 300, 300)
+                sub.style.display = "block"
+                difficulty.style.display = "block"
+                if(tc > 500)
+                    get_difficulty = false
+            }
+            else
+            {
+                ctx.fillStyle = 'black'
+                ctx.fillText("Thank you for playing.", 300, 300)
+            }
             return
     }
 
