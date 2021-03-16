@@ -184,10 +184,20 @@ function download_csv(data) {
     hiddenElement.click();
 }
 
+//  Submission Button
+sub.addEventListener("click",
+    (e) =>
+    {
+        get_difficulty = false
+        diff = difficulty.value
+        sub.style.display = "none"
+        difficulty.style.display = "none"
+    }
+)
+
 // Game Loop
 function draw()
 {
-    console.log(end)
     if(!bush.complete)
     {
         alert("loading")
@@ -311,8 +321,7 @@ function draw()
                 ctx.fillText("Please give difficulty.", 300, 300)
                 sub.style.display = "block"
                 difficulty.style.display = "block"
-                if(tc > 500)
-                    get_difficulty = false
+                sub.style.display = "block"
             }
             else
             {
