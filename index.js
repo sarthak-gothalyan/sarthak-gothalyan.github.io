@@ -6,9 +6,10 @@ let ctx = canvas.getContext("2d")
 ctx.font = "30px Arial"
 let difficulty = document.querySelector("input")
 let sub = document.querySelector("button")
+let p = document.querySelector("p")
+p.style.display = "none"
 sub.style.display = "none"
 difficulty.style.display = "none"
-difficulty.style.zIndex = +1
 
 //  Check if inside bush
 function isInside(rw, rh, rx, ry, x, y)
@@ -39,19 +40,6 @@ function l(size, to_empty)
     return bushes
 }
 
-// Random Time Generator
-function t(size)
-{
-    let times = []
-    while(times.length <= size)
-    { 
-        let time = Math.floor(Math.random()*100) + 10
-        times = times.filter(temp => !(temp === time))
-        times.push(time)
-    }
-    return times
-}
-
 // Load Image
 let bush = new Image()
 bush.src = "berry.png"
@@ -67,12 +55,6 @@ document.body.appendChild(audio);
 audio.src = "forest.wav"
 audio.loop = true
 
-// Load Stressing Audio
-var stress = document.createElement("AUDIO")
-document.body.appendChild(stress);
-stress.src = "stressor.wav"
-stress.loop = true
-
 // Global Variables
 let pos = {x: 0, y: 0}
 let dest = -1   // Destination Bush
@@ -85,30 +67,9 @@ let state = 'initiate'  // State of Game
 let end = {m: 0, s: 3}  //  End time of Single Playthrough
 let plays = 1   // Playthrough Count
 let download = false    // So csv Downloads Just once
-let bushes = l(10, 5)
-let noise_t = 0
-let noise_c = 0
-let times = t(5)
+let bushes = l(6, 3)
 let get_difficulty = true
 let diff = 0;
-
-difficulty.addEventListener("change", (e) => {diff = difficulty.value})
-
-// Stress Pauser
-document.addEventListener("keypress",
-    (e) =>
-    {
-        if(e.code === "Space" && !stress.paused)
-        {
-            ++noise_c
-            if(noise_c === 5)
-            {
-                noise_c = 0
-                stress.pause()
-            }
-        }
-    }
-)
 
 //  Update Rewards and Exploits
 function update(patch)
@@ -192,6 +153,7 @@ sub.addEventListener("click",
         diff = difficulty.value
         sub.style.display = "none"
         difficulty.style.display = "none"
+        p.style.display = "none"
     }
 )
 
@@ -228,22 +190,6 @@ function draw()
             seconds = seconds%60
             ctx.fillText(`Time: ${minutes}:${seconds}`, 100, 100)
             ctx.fillText("Score: " + score, 100, 140)
-            if(!stress.paused)
-            {
-                ++noise_t
-                if(noise_t >= 500)
-                {
-                    noise_c = 0
-                    noise_t = 0
-                    stress.pause()
-                }
-            }
-            times.forEach(temp => 
-                {
-                    if(temp*100 === tc)
-                        stress.play()
-                }
-            )
             if(minutes === end.m && seconds === end.s)
             {
                 switch(plays)
@@ -252,9 +198,8 @@ function draw()
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
-                        bushes = l(15, 5)
+                        bushes = l(8, 4)
                         audio.pause()
-                        stress.pause()
                         end.m = 0
                         bush.src = "bush.png"
                         return
@@ -263,9 +208,8 @@ function draw()
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
-                        bushes = l(15, 5)
+                        bushes = l(6, 3)
                         audio.pause()
-                        stress.pause()
                         end.m = 0
                         bush.src = "bush.png"
                         return
@@ -274,9 +218,8 @@ function draw()
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
-                        bushes = l(15, 5)
+                        bushes = l(8, 4)
                         audio.pause()
-                        stress.pause()
                         bush.src = "bush.png"
                         return
 
@@ -284,15 +227,13 @@ function draw()
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
-                        bushes = l(15, 5)
+                        bushes = l(6, 3)
                         audio.pause()
-                        stress.pause()
                         bush.src = "bush.png"
                         return
 
                     default:
                         audio.pause()
-                        stress.pause()
                         tc = 0;
                         state = "end"
                         return
@@ -322,6 +263,8 @@ function draw()
                 sub.style.display = "block"
                 difficulty.style.display = "block"
                 sub.style.display = "block"
+                p.style.display = "block"
+                p.textContent = difficulty.value
             }
             else
             {
