@@ -1,0 +1,66 @@
+form
+{
+    justify-content: center;
+    text-align: center;
+}
+
+.personal_details
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+p
+{
+    justify-content: left;
+    text-align: center;
+    margin-right: 5%;
+}
+
+nav
+{
+    float: left;
+}
+
+div
+{
+    width: 100%;
+    margin: 0 0 0 0;
+    display: grid;
+    grid-template-columns: 30% 30%;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+#gender
+{
+    display: flex;
+    justify-content: center;
+}
+
+label
+{
+    float: right;
+    margin-right: 2%;
+}
+
+button
+{
+    height: 30px;
+    width: 100px;
+}
+
+#slider
+{
+    width: 30%;
+    height: 30px;
+}
+
+#diff
+{
+    font-size: 3em;
+    justify-content: center;
+    text-align: justify;
+}

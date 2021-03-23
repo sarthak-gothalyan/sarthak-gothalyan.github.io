@@ -1,12 +1,59 @@
 // Set Canvas Attributes
 let canvas = document.querySelector("canvas")
+canvas.style.display = "none"
 canvas.setAttribute("width", 1250)
 canvas.setAttribute("height", 750)
 let ctx = canvas.getContext("2d")
 ctx.font = "30px Arial"
-let difficulty = document.querySelector("input")
-let sub = document.querySelector("button")
-let p = document.querySelector("p")
+document.querySelector(".psy_form").style.display = "none"
+
+// Consent And Details Form
+let client_name = ''
+let gender = ''
+let age = 0
+document.querySelector(".personal_details > button").addEventListener("click",
+    (e) =>
+    {
+        e.preventDefault()
+        if(document.querySelector("#consent").checked)
+        {
+            client_name = document.querySelector("#client_name").value
+            age = document.querySelector("#client_age").value
+            document.querySelectorAll(".gen").forEach(
+                (g) =>
+                {
+                    if(g.checked)
+                        gender = g.value
+                }
+            )
+            document.querySelector(".personal_details").remove()
+            document.querySelector(".psy_form").style.display = "block"
+        }
+    }
+)
+
+// Psychology Form
+let form_data = []
+document.querySelector(".psy_form > button").addEventListener("click",
+    (e) =>
+    {
+        e.preventDefault()
+        document.querySelectorAll("label > input").forEach(
+            (b) =>
+            {
+                if(b.checked)
+                    form_data.push({name: b.name, value: b.value})
+            }
+        )
+        document.querySelector("form").remove()
+        canvas.style.display = "block"
+    }
+)
+
+// Difficulty Slider
+let difficulty = document.querySelector("#slider")
+let sub = document.querySelector("body > div > button")
+let p = document.querySelector("#diff")
 p.style.display = "none"
 sub.style.display = "none"
 difficulty.style.display = "none"
@@ -22,13 +69,17 @@ function l(size, to_empty)
 {
     let id = 1
     let bushes = []
-    while(bushes.length <= size)
+    while(bushes.length < size)
     { 
-        let bush = {id: id, x: Math.floor(Math.random()*910) + 300, y: Math.floor(Math.random()*720) + 10, e: 0, r: 100, empty: false}
+        let bush = {id: 0, x: Math.floor(Math.random()*910) + 300, y: Math.floor(Math.random()*720) + 10, e: 0, r: 100, rate: 1.1, empty: false}
         bushes = bushes.filter(b => !isInside(140, 140, bush.x - 70, bush.y - 70, b.x, b.y))
-        bushes.push(bush)
-        if(bushes.length === id)
+        if(bushes.length === id-1)
+        {
+            bushes.push(bush)
+            console.log(id)
+            bushes[id-1].id = id
             ++id
+        }
         else
             continue
     }
@@ -64,12 +115,13 @@ let tc = 0  // Counter For Time
 let score = 0
 let data = []   // Data Collected in array form
 let state = 'initiate'  // State of Game
-let end = {m: 0, s: 30}  //  End time of Single Playthrough
+let end = {m: 0, s: 5}  //  End time of Single Playthrough
 let plays = 1   // Playthrough Count
 let download = false    // So csv Downloads Just once
 let bushes = l(6, 3)
+console.log(bushes) // Remove this
 let get_difficulty = true
-let diff = 0;
+let diff = [];
 
 //  Update Rewards and Exploits
 function update(patch)
@@ -84,7 +136,7 @@ function update(patch)
             else if(b.empty)
                 return
             else
-                b.r = b.r <= 0 ? 3 : b.r>=100 || b.r*1.3 >= 100 ? 100 : Math.floor(b.r*1.3)
+                b.r = b.r <= 0 ? 3 : b.r>=100 || b.r*b.rate >= 100 ? 100 : Math.floor(b.r*b.rate)
 
             bushes[i].r = b.r
             bushes[i].e = b.e
@@ -107,7 +159,7 @@ document.body.addEventListener("mousemove",
 document.addEventListener("click",
     function (e)
     {
-        if(state === "change" || state === "initiate")
+        if((state === "change" || state === "initiate") && canvas.style.display !== 'none')
         {
             tc = 0
             state = "start"
@@ -149,8 +201,9 @@ function download_csv(data) {
 sub.addEventListener("click",
     (e) =>
     {
+        e.preventDefault()
         get_difficulty = false
-        diff = difficulty.value
+        diff.push(difficulty.value)
         sub.style.display = "none"
         difficulty.style.display = "none"
         p.style.display = "none"
@@ -174,13 +227,14 @@ function draw()
         case 'initiate':
             ctx.fillStyle = 'black'
             ctx.fillText("Welcome To The Virtual Foraging Task", 300, 100)
-            ctx.fillText("You are in a field with hidden berry bushes.", 300, 150)
+            ctx.fillText("You are in a field with berry bushes.", 300, 150)
             ctx.fillText("Move your mouse around to look for the bushes.", 300, 200)
-            ctx.fillText("Click on the shrub you want to pick beries from.", 300, 250)
+            ctx.fillText("Click on the shrub to pick beries.", 300, 250)
             ctx.fillText("You have a total of 3 mins to harvest as much berries as you can.", 300, 300)
             ctx.fillText("For any shrub, Harvesting Time costs 0.5 sec.", 300, 350)
             ctx.fillText("Happy Foraging.", 300, 400)
             ctx.fillText("CLick to continue", 300, 450)
+            tc = 0
             return
 
         case 'start':
@@ -195,44 +249,72 @@ function draw()
                 switch(plays)
                 {
                     case 1:
+                        get_difficulty = true
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
                         bushes = l(8, 4)
+                        console.log(bushes) // Remove this
                         audio.pause()
                         end.m = 0
                         bush.src = "bush.png"
                         return
 
                     case 2:
+                        get_difficulty = true
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
                         bushes = l(6, 3)
+                        bushes[3].rate = 1.3
+                        console.log(bushes) // Remove this
                         audio.pause()
                         end.m = 0
                         bush.src = "bush.png"
                         return
 
                     case 3:
+                        get_difficulty = true
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
                         bushes = l(8, 4)
+                        bushes[4].rate = 1.3
+                        bushes[5].rate = 1.3
+                        console.log(bushes) // Remove this
                         audio.pause()
                         bush.src = "bush.png"
                         return
 
                     case 4:
+                        get_difficulty = true
                         state = "change"
                         ++plays
                         data.push([-1, -1, score])
                         bushes = l(6, 3)
+                        bushes[3].rate = 1.2
+                        bushes[4].rate = 1.3
+                        console.log(bushes) // Remove this
+                        audio.pause()
+                        bush.src = "bush.png"
+                        return
+
+                    case 5:
+                        get_difficulty = true
+                        state = "change"
+                        ++plays
+                        data.push([-1, -1, score])
+                        bushes = l(8, 4)
+                        bushes[4].rate = 1.2
+                        bushes[5].rate = 1.3
+                        bushes[6].rate = 1.4
+                        console.log(bushes) // Remove this
                         audio.pause()
                         bush.src = "bush.png"
                         return
 
                     default:
+                        get_difficulty = true
                         audio.pause()
                         tc = 0;
                         state = "end"
@@ -242,18 +324,36 @@ function draw()
             break
             
         case 'change':
+            tc = 0
             action = 'searching'
             score = 0
             // Update End Condition
-            ctx.fillStyle = 'black'
-            ctx.fillText("We will now move to a new forest to forage.", 300, 300)
-            ctx.fillText("Click to continue foraging.", 300, 350)
+            if(get_difficulty)
+            {
+                ctx.fillStyle = 'black'
+                ctx.fillText("Please rate the difficulty level of the task (1 - 10).", 300, 100)
+                sub.style.display = "block"
+                difficulty.style.display = "block"
+                sub.style.display = "block"
+                p.style.display = "block"
+                p.textContent = difficulty.value
+            }
+            else
+            {
+                ctx.fillStyle = 'black'
+                ctx.fillText("We will now move to a new forest to forage.", col*2, row)
+                ctx.fillText("Press space to continue foraging.", col*2, row+row/4)
+            }
             return
         
         case 'end':
-            if(!download)
+            tc = 0
+            if(!download && !get_difficulty)
             {
                 download_csv(data)
+                console.log("difficulty =",diff)
+                console.log("form data =", form_data)
+                console.log(client_name, age, gender)
                 download = true
             }
             if(get_difficulty)
